@@ -1,0 +1,18 @@
+{
+  "name": "tailchat-plugin",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "plugins:all": "ministar buildPlugin all",
+    "plugins:watch": "ministar watchPlugin all"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "mini-star": "^2.1.2",
+    "react": "^18.2.0"
+  }
+}
