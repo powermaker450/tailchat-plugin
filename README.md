@@ -1,1 +1,12 @@
-# tailchat-plugin
+# ssdcc的tailchat插件列表
+```json
+{
+    "label": "SSDC视频消息支持插件",
+    "name": "cn.ssdcc.tailchat.video",
+    "url": "https://ssdcc.github.io/tailchat-plugin/dist/plugins/cn.ssdcc.tailchat.video/index.js",
+    "version": "0.0.0",
+    "author": "ssdcc",
+    "description": "提供视频消息能力",
+    "requireRestart": true
+}
+```
