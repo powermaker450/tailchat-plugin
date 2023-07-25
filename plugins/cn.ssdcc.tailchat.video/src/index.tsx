@@ -1,5 +1,5 @@
 import {
-    regMessageExtraParser, regPluginCardItemMap,
+    regMessageExtraParser, regPluginCardItem,
     regChatInputAction, uploadFile, getMessageTextDecorators
 } from '@capital/common';
 import React, {useState} from 'react';
@@ -66,7 +66,7 @@ regMessageExtraParser({
         return;
     },
 });
-regPluginCardItemMap(
+regPluginCardItem(
     'SsdccVideo', {
         render: Loadable(() =>
             VideoItem

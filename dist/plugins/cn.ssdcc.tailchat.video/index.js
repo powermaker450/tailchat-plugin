@@ -1366,7 +1366,7 @@ definePlugin('@plugins/cn.ssdcc.tailchat.video', ['exports', '@capital/common', 
 	    return;
 	  }
 	});
-	common.regPluginCardItemMap("SsdccVideo", {
+	common.regPluginCardItem("SsdccVideo", {
 	  render: component.Loadable(() => VideoItem)
 	});
 	const VideoItem = React__default["default"].memo((props) => {
