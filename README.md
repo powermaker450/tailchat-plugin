@@ -10,3 +10,14 @@
     "requireRestart": true
 }
 ```
+# minio迁移
+```bash
+wget https://dl.min.io/client/mc/release/linux-amd64/mc
+sudo docker ps
+sudo docker exec -it tailchat-minio-1 /bin/bash
+sudo docker cp mc <CONTAINER_ID>:/
+sudo docker exec -it <IMAGE_NAME> chmod +x /mc
+sudo docker exec -it <IMAGE_NAME> /mc alias set minio_data_tailchat http://127.0.0.1:9000 tailchat com.msgbyte.tailchat
+sudo docker exec -it <IMAGE_NAME> /mc cp --recursive minio_data_tailchat/tailchat/ /minio_data_tailchat
+sudo docker cp <CONTAINER_ID>:/minio_data_tailchat minio_data_tailchat
+```

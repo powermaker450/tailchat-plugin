@@ -1318,6 +1318,33 @@ definePlugin('@plugins/cn.ssdcc.tailchat.video', ['exports', '@capital/common', 
 
 	const PLUGIN_ID = "cn.ssdcc.tailchat.video";
 	const PLUGIN_NAME = "SSDC\u89C6\u9891\u6D88\u606F\u652F\u6301\u63D2\u4EF6";
+	function setlocalStorage(key, value) {
+	  var v = value;
+	  if (typeof v == "object") {
+	    v = JSON.stringify(v);
+	    v = "obj-" + v;
+	  } else {
+	    v = "str-" + v;
+	  }
+	  var localStorage = window.localStorage;
+	  if (localStorage) {
+	    localStorage.setItem(key, v);
+	  }
+	}
+	function getlocalStorage(key) {
+	  var localStorage = window.localStorage;
+	  if (localStorage)
+	    var v = localStorage.getItem(key);
+	  if (!v) {
+	    return;
+	  }
+	  if (v.indexOf("obj-") === 0) {
+	    v = v.slice(4);
+	    return JSON.parse(v);
+	  } else if (v.indexOf("str-") === 0) {
+	    return v.slice(4);
+	  }
+	}
 	console.log(`Plugin ${PLUGIN_NAME}(${PLUGIN_ID}) is loaded`);
 	common.regMessageExtraParser({
 	  name: "com.msgbyte.linkmeta/urlParser",
@@ -1372,9 +1399,53 @@ definePlugin('@plugins/cn.ssdcc.tailchat.video', ['exports', '@capital/common', 
 	const VideoItem = React__default["default"].memo((props) => {
 	  var _a;
 	  const payload = (_a = props.payload) != null ? _a : {};
-	  const url = payload.data.replace("{BACKEND}", common.getServiceUrl());
+	  const [url, seturl] = React.useState(payload.data.replace("{BACKEND}", common.getServiceUrl()));
+	  const oldurl = payload.data.replace("{BACKEND}", common.getServiceUrl());
 	  const [ishidden, setIshidden] = React.useState(true);
+	  const [isload, setisload] = React.useState(true);
+	  const [loaded, setloaded] = React.useState("0/0MB");
 	  function handleClick() {
+	    const lsurl = getlocalStorage(url);
+	    if (lsurl) {
+	      console.log(lsurl, "\u7F13\u5B58\u5730\u5740");
+	      seturl(getlocalStorage(url));
+	    }
+	    const req = new XMLHttpRequest();
+	    req.open("GET", url, true);
+	    req.responseType = "blob";
+	    req.onload = function() {
+	      if (this.status === 200) {
+	        const videoBlob = this.response;
+	        const blobSrc = URL.createObjectURL(videoBlob);
+	        setlocalStorage(oldurl, blobSrc);
+	        seturl(blobSrc);
+	        console.log(blobSrc, "blobSrc\u52A0\u8F7D\u5B8C\u6BD5");
+	        setisload(false);
+	      } else {
+	        req.open("GET", oldurl, true);
+	        req.responseType = "blob";
+	        req.onload = function() {
+	          if (this.status === 200) {
+	            const videoBlob = this.response;
+	            const blobSrc = URL.createObjectURL(videoBlob);
+	            setlocalStorage(oldurl, blobSrc);
+	            seturl(blobSrc);
+	            console.log(blobSrc, "\u7F13\u5B58\u5931\u6548blobSrc\u52A0\u8F7D\u5B8C\u6BD5");
+	          } else {
+	            seturl(oldurl);
+	          }
+	          setisload(false);
+	        };
+	      }
+	    };
+	    req.onprogress = function(event) {
+	      if (payload.size) {
+	        setloaded((event.loaded / 1048576).toFixed(2) + "/" + (payload.size / 1048576).toFixed(2) + "MB");
+	      } else {
+	        setloaded((event.loaded / 1048576).toFixed(2) + "MB");
+	      }
+	    };
+	    req.send();
 	    setIshidden(false);
 	  }
 	  if (ishidden) {
@@ -1388,7 +1459,17 @@ definePlugin('@plugins/cn.ssdcc.tailchat.video', ['exports', '@capital/common', 
 	      onClick: handleClick,
 	      style: { position: "absolute", top: 80, left: 100, width: 100, height: 100 }
 	    }))));
+	  } else if (isload) {
+	    return /* @__PURE__ */ React__default["default"].createElement("div", {
+	      className: "max-w-full border border-black border-opacity-20 rounded-md p-2 bg-black bg-opacity-5 dark:bg-black dark:bg-opacity-10 inline-flex overflow-hidden"
+	    }, /* @__PURE__ */ React__default["default"].createElement("div", null, /* @__PURE__ */ React__default["default"].createElement("div", null, payload.label), /* @__PURE__ */ React__default["default"].createElement("div", null, /* @__PURE__ */ React__default["default"].createElement("img", {
+	      src: payload.imgSrc,
+	      style: { height: 200, width: 300 }
+	    }), /* @__PURE__ */ React__default["default"].createElement("div", {
+	      style: { position: "absolute", top: 100, left: 8, width: 300, height: 10, textAlign: "center", fontSize: 20 }
+	    }, loaded))));
 	  } else {
+	    console.log(url);
 	    return /* @__PURE__ */ React__default["default"].createElement("div", {
 	      className: "max-w-full border border-black border-opacity-20 rounded-md p-2 bg-black bg-opacity-5 dark:bg-black dark:bg-opacity-10 inline-flex overflow-hidden"
 	    }, /* @__PURE__ */ React__default["default"].createElement("div", null, /* @__PURE__ */ React__default["default"].createElement("div", null, payload.label), /* @__PURE__ */ React__default["default"].createElement("video", {
@@ -1411,7 +1492,8 @@ definePlugin('@plugins/cn.ssdcc.tailchat.video', ['exports', '@capital/common', 
 	      data: res.url,
 	      width: videoRes.width,
 	      height: videoRes.height,
-	      imgSrc: videoRes.imgSrc
+	      imgSrc: videoRes.imgSrc,
+	      size: file.size
 	    }));
 	  }
 	});
