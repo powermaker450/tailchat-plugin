@@ -1469,7 +1469,6 @@ definePlugin('@plugins/cn.ssdcc.tailchat.video', ['exports', '@capital/common', 
 	      style: { position: "absolute", top: 100, left: 8, width: 300, height: 10, textAlign: "center", fontSize: 20 }
 	    }, loaded))));
 	  } else {
-	    console.log(url);
 	    return /* @__PURE__ */ React__default["default"].createElement("div", {
 	      className: "max-w-full border border-black border-opacity-20 rounded-md p-2 bg-black bg-opacity-5 dark:bg-black dark:bg-opacity-10 inline-flex overflow-hidden"
 	    }, /* @__PURE__ */ React__default["default"].createElement("div", null, /* @__PURE__ */ React__default["default"].createElement("div", null, payload.label), /* @__PURE__ */ React__default["default"].createElement("video", {
