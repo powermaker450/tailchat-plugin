@@ -1409,9 +1409,41 @@ definePlugin('@plugins/cn.ssdcc.tailchat.video', ['exports', '@capital/common', 
 	    if (lsurl) {
 	      console.log(lsurl, "\u7F13\u5B58\u5730\u5740");
 	      seturl(getlocalStorage(url));
+	      setisload(false);
+	    } else {
+	      const req = new XMLHttpRequest();
+	      req.open("GET", url, true);
+	      req.responseType = "blob";
+	      req.onload = function() {
+	        if (this.status === 200) {
+	          const videoBlob = this.response;
+	          const blobSrc = URL.createObjectURL(videoBlob);
+	          setlocalStorage(oldurl, blobSrc);
+	          seturl(blobSrc);
+	          console.log(blobSrc, "blobSrc\u52A0\u8F7D\u5B8C\u6BD5");
+	        }
+	        setisload(false);
+	      };
+	      req.onprogress = function(event) {
+	        if (payload.size) {
+	          setloaded((event.loaded / 1048576).toFixed(2) + "/" + (payload.size / 1048576).toFixed(2) + "MB");
+	        } else {
+	          setloaded((event.loaded / 1048576).toFixed(2) + "MB");
+	        }
+	      };
+	      req.send();
 	    }
+	    setIshidden(false);
+	  }
+	  const [isSecondload, setisSecondload] = React.useState(false);
+	  const videoerror = function() {
+	    if (isSecondload) {
+	      return;
+	    }
+	    setisSecondload(true);
+	    setisload(true);
 	    const req = new XMLHttpRequest();
-	    req.open("GET", url, true);
+	    req.open("GET", oldurl, true);
 	    req.responseType = "blob";
 	    req.onload = function() {
 	      if (this.status === 200) {
@@ -1419,24 +1451,9 @@ definePlugin('@plugins/cn.ssdcc.tailchat.video', ['exports', '@capital/common', 
 	        const blobSrc = URL.createObjectURL(videoBlob);
 	        setlocalStorage(oldurl, blobSrc);
 	        seturl(blobSrc);
-	        console.log(blobSrc, "blobSrc\u52A0\u8F7D\u5B8C\u6BD5");
-	        setisload(false);
-	      } else {
-	        req.open("GET", oldurl, true);
-	        req.responseType = "blob";
-	        req.onload = function() {
-	          if (this.status === 200) {
-	            const videoBlob = this.response;
-	            const blobSrc = URL.createObjectURL(videoBlob);
-	            setlocalStorage(oldurl, blobSrc);
-	            seturl(blobSrc);
-	            console.log(blobSrc, "\u7F13\u5B58\u5931\u6548blobSrc\u52A0\u8F7D\u5B8C\u6BD5");
-	          } else {
-	            seturl(oldurl);
-	          }
-	          setisload(false);
-	        };
+	        console.log(blobSrc, "\u4E8C\u6B21blobSrc\u52A0\u8F7D\u5B8C\u6BD5");
 	      }
+	      setisload(false);
 	    };
 	    req.onprogress = function(event) {
 	      if (payload.size) {
@@ -1446,12 +1463,27 @@ definePlugin('@plugins/cn.ssdcc.tailchat.video', ['exports', '@capital/common', 
 	      }
 	    };
 	    req.send();
-	    setIshidden(false);
-	  }
+	  };
+	  const downloadUrl = function() {
+	    const a = document.createElement("a");
+	    a.href = oldurl;
+	    a.download = payload.label;
+	    a.target = "_blank";
+	    a.click();
+	  };
 	  if (ishidden) {
 	    return /* @__PURE__ */ React__default["default"].createElement("div", {
 	      className: "max-w-full border border-black border-opacity-20 rounded-md p-2 bg-black bg-opacity-5 dark:bg-black dark:bg-opacity-10 inline-flex overflow-hidden"
-	    }, /* @__PURE__ */ React__default["default"].createElement("div", null, /* @__PURE__ */ React__default["default"].createElement("div", null, payload.label), /* @__PURE__ */ React__default["default"].createElement("div", null, /* @__PURE__ */ React__default["default"].createElement("img", {
+	    }, /* @__PURE__ */ React__default["default"].createElement("div", null, /* @__PURE__ */ React__default["default"].createElement("div", {
+	      className: "inline-flex"
+	    }, payload.label, /* @__PURE__ */ React__default["default"].createElement("div", {
+	      className: "flex text-lg items-center",
+	      onClick: downloadUrl
+	    }, /* @__PURE__ */ React__default["default"].createElement(component.Icon, {
+	      icon: "mdi:downloads"
+	    }), /* @__PURE__ */ React__default["default"].createElement("span", {
+	      className: "ml-1"
+	    }, "\u4E0B\u8F7D"))), /* @__PURE__ */ React__default["default"].createElement("div", null, /* @__PURE__ */ React__default["default"].createElement("img", {
 	      src: payload.imgSrc,
 	      style: { height: 200, width: 300 }
 	    }), /* @__PURE__ */ React__default["default"].createElement(component.Icon, {
@@ -1462,7 +1494,16 @@ definePlugin('@plugins/cn.ssdcc.tailchat.video', ['exports', '@capital/common', 
 	  } else if (isload) {
 	    return /* @__PURE__ */ React__default["default"].createElement("div", {
 	      className: "max-w-full border border-black border-opacity-20 rounded-md p-2 bg-black bg-opacity-5 dark:bg-black dark:bg-opacity-10 inline-flex overflow-hidden"
-	    }, /* @__PURE__ */ React__default["default"].createElement("div", null, /* @__PURE__ */ React__default["default"].createElement("div", null, payload.label), /* @__PURE__ */ React__default["default"].createElement("div", null, /* @__PURE__ */ React__default["default"].createElement("img", {
+	    }, /* @__PURE__ */ React__default["default"].createElement("div", null, /* @__PURE__ */ React__default["default"].createElement("div", {
+	      className: "inline-flex"
+	    }, payload.label, /* @__PURE__ */ React__default["default"].createElement("div", {
+	      className: "flex text-lg items-center",
+	      onClick: downloadUrl
+	    }, /* @__PURE__ */ React__default["default"].createElement(component.Icon, {
+	      icon: "mdi:downloads"
+	    }), /* @__PURE__ */ React__default["default"].createElement("span", {
+	      className: "ml-1"
+	    }, "\u4E0B\u8F7D"))), /* @__PURE__ */ React__default["default"].createElement("div", null, /* @__PURE__ */ React__default["default"].createElement("img", {
 	      src: payload.imgSrc,
 	      style: { height: 200, width: 300 }
 	    }), /* @__PURE__ */ React__default["default"].createElement("div", {
@@ -1471,11 +1512,21 @@ definePlugin('@plugins/cn.ssdcc.tailchat.video', ['exports', '@capital/common', 
 	  } else {
 	    return /* @__PURE__ */ React__default["default"].createElement("div", {
 	      className: "max-w-full border border-black border-opacity-20 rounded-md p-2 bg-black bg-opacity-5 dark:bg-black dark:bg-opacity-10 inline-flex overflow-hidden"
-	    }, /* @__PURE__ */ React__default["default"].createElement("div", null, /* @__PURE__ */ React__default["default"].createElement("div", null, payload.label), /* @__PURE__ */ React__default["default"].createElement("video", {
+	    }, /* @__PURE__ */ React__default["default"].createElement("div", null, /* @__PURE__ */ React__default["default"].createElement("div", {
+	      className: "inline-flex"
+	    }, payload.label, /* @__PURE__ */ React__default["default"].createElement("div", {
+	      className: "flex text-lg items-center",
+	      onClick: downloadUrl
+	    }, /* @__PURE__ */ React__default["default"].createElement(component.Icon, {
+	      icon: "mdi:downloads"
+	    }), /* @__PURE__ */ React__default["default"].createElement("span", {
+	      className: "ml-1"
+	    }, "\u4E0B\u8F7D"))), /* @__PURE__ */ React__default["default"].createElement("video", {
 	      src: url,
 	      controls: true,
 	      autoPlay: true,
-	      style: { maxHeight: 300, maxWidth: 300 }
+	      style: { maxHeight: 300, maxWidth: 300 },
+	      onError: videoerror
 	    })));
 	  }
 	});
