@@ -1549,7 +1549,6 @@ definePlugin('@plugins/cn.ssdcc.tailchat.video', ['exports', '@capital/common', 
 	      const res = await common.uploadFile(file, {
 	        onProgress: function(percentage, progressEvent) {
 	          setUpload.setUploadProgress((progressEvent.loaded / 1048576).toFixed(2) + "/" + (progressEvent.total / 1048576).toFixed(2) + "MB|\u8FDB\u5EA6:" + percentage * 100 + "%");
-	          console.log(percentage);
 	        }
 	      });
 	      common.closeModal(key);
@@ -1564,7 +1563,6 @@ definePlugin('@plugins/cn.ssdcc.tailchat.video', ['exports', '@capital/common', 
 	      }));
 	    } catch (e) {
 	      common.closeModal(key);
-	      return;
 	    }
 	  }
 	});
