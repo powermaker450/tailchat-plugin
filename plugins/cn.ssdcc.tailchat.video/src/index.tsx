@@ -1,14 +1,43 @@
 import {
     regMessageExtraParser, regPluginCardItem,
-    regChatInputAction, uploadFile, getMessageTextDecorators
+    regChatInputAction, uploadFile, getMessageTextDecorators,openModal, closeModal
 } from '@capital/common';
 import React, {useState} from 'react';
 import {getServiceUrl} from '@capital/common';
 import {Icon, Loadable} from '@capital/component';
 import _get from "lodash/get";
-
 const PLUGIN_ID = 'cn.ssdcc.tailchat.video';
 const PLUGIN_NAME = 'SSDC视频消息支持插件';
+function setlocalStorage (key, value) {
+    var v = value;
+    //是对象转成JSON，不是直接作为值存入内存
+    if (typeof v == 'object') {
+        v = JSON.stringify(v);
+        v = 'obj-' + v;
+    } else {
+        v = 'str-' + v;
+    }
+    var localStorage = window.localStorage;
+    if (localStorage ) {
+        localStorage .setItem(key, v);
+    }
+}
+//获取缓存
+function getlocalStorage (key) {
+    var localStorage = window.localStorage;
+    if (localStorage )
+        var v = localStorage.getItem(key);
+    if (!v) {
+        return;
+    }
+    if (v.indexOf('obj-') === 0) {
+        v = v.slice(4);
+        return JSON.parse(v);
+    } else if (v.indexOf('str-') === 0) {
+        return v.slice(4);
+    }
+}
+
 
 console.log(`Plugin ${PLUGIN_NAME}(${PLUGIN_ID}) is loaded`);
 
@@ -44,7 +73,6 @@ regMessageExtraParser({
                 return (<div
                         className="max-w-full rounded-md p-2 bg-black bg-opacity-5 dark:bg-black dark:bg-opacity-10 inline-flex overflow-hidden">
                         <Icon icon="mdi:video-outline" onClick={handleClick}/>
-
                     </div>
                 )
 
@@ -73,21 +101,93 @@ regPluginCardItem(
         )
     }
 )
+
 const VideoItem: React.FC<{ payload: any; }> = React.memo(
     (props) => {
         const payload = props.payload ?? {};
-        const url = payload.data.replace('{BACKEND}', getServiceUrl());
+        const [url, seturl] = useState(payload.data.replace('{BACKEND}', getServiceUrl()));
+        const oldurl = payload.data.replace('{BACKEND}', getServiceUrl())
         const [ishidden, setIshidden] = useState(true);
-
+        const [isload, setisload] = useState(true);
+        const [loaded, setloaded] = useState("0/0MB");
         function handleClick() {
-            setIshidden(false);
+            const lsurl = getlocalStorage(url)
+            if (lsurl){
+                console.log(lsurl, '缓存地址')
+                seturl(getlocalStorage(url))
+                setisload(false)
+            }else {
+                const req = new XMLHttpRequest();
+                req.open('GET', url, true)
+                req.responseType = 'blob';
+                req.onload = function () {
+                    if (this.status === 200) {
+                        const videoBlob = this.response
+                        const blobSrc = URL.createObjectURL(videoBlob)
+                        setlocalStorage(oldurl,blobSrc)
+                        seturl(blobSrc)
+                        console.log(blobSrc, 'blobSrc加载完毕')
+                    }
+                    setisload(false)
+                }
+                req.onprogress = function(event) {
+                    if (payload.size){
+                        setloaded((event.loaded/1048576).toFixed(2)+'/'+(payload.size/1048576).toFixed(2)+'MB')
+                    }else {
+                        setloaded((event.loaded/1048576).toFixed(2)+'MB')
+                    }
+                }
+                req.send()
+            }
+            setIshidden(false)
+        }
+        const [isSecondload, setisSecondload] = useState(false);
+        const videoerror = function(){
+            if (isSecondload){
+                return
+            }
+            setisSecondload(true)
+            setisload(true)
+            const req = new XMLHttpRequest();
+            req.open('GET', oldurl, true)
+            req.responseType = 'blob';
+            req.onload = function () {
+                if (this.status === 200) {
+                    const videoBlob = this.response
+                    const blobSrc = URL.createObjectURL(videoBlob)
+                    setlocalStorage(oldurl,blobSrc)
+                    seturl(blobSrc)
+                    console.log(blobSrc, '二次blobSrc加载完毕')
+                }
+                setisload(false)
+            }
+            req.onprogress = function(event) {
+                if (payload.size){
+                    setloaded((event.loaded/1048576).toFixed(2)+'/'+(payload.size/1048576).toFixed(2)+'MB')
+                }else {
+                    setloaded((event.loaded/1048576).toFixed(2)+'MB')
+                }
+            }
+            req.send()
+        }
+        const downloadUrl = function () {
+            const a = document.createElement('a');
+            a.href = oldurl
+            a.download = payload.label; // 这里填保存成的文件名
+            a.target = '_blank';
+            a.click();
         }
         if (ishidden) {
             return (
                 <div
                     className="max-w-full border border-black border-opacity-20 rounded-md p-2 bg-black bg-opacity-5 dark:bg-black dark:bg-opacity-10 inline-flex overflow-hidden">
                     <div>
-                        <div>{payload.label}</div>
+                        <div className="inline-flex">{payload.label}
+                            <div className="flex text-lg items-center" onClick={downloadUrl}>
+                                <Icon icon="mdi:downloads" />
+                                <span className="ml-1">{'下载'}</span>
+                            </div>
+                        </div>
                         <div>
                             <img src={payload.imgSrc} style={{height:200,width:300}}/>
                             <Icon icon="ph:play-bold" onClick={handleClick}
@@ -96,18 +196,43 @@ const VideoItem: React.FC<{ payload: any; }> = React.memo(
                     </div>
                 </div>
             )
-
+        } else if(isload){
+            return (
+                <div
+                    className="max-w-full border border-black border-opacity-20 rounded-md p-2 bg-black bg-opacity-5 dark:bg-black dark:bg-opacity-10 inline-flex overflow-hidden">
+                    <div>
+                        <div className="inline-flex">{payload.label}
+                            <div className="flex text-lg items-center" onClick={downloadUrl}>
+                                <Icon icon="mdi:downloads" />
+                                <span className="ml-1">{'下载'}</span>
+                            </div>
+                        </div>
+                        <div>
+                            <img src={payload.imgSrc} style={{height:200,width:300}}/>
+                            <div style={{position:'absolute',top:100,left:8,width:300,height:10,textAlign:'center',fontSize:20}}>
+                                {loaded}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )
         } else {
             return (
                 <div
                     className="max-w-full border border-black border-opacity-20 rounded-md p-2 bg-black bg-opacity-5 dark:bg-black dark:bg-opacity-10 inline-flex overflow-hidden">
                     <div>
-                        <div>{payload.label}</div>
+                        <div className="inline-flex">{payload.label}
+                            <div className="flex text-lg items-center" onClick={downloadUrl}>
+                                <Icon icon="mdi:downloads" />
+                                <span className="ml-1">{'下载'}</span>
+                            </div>
+                        </div>
                         <video
                             src={url}
                             controls
                             autoPlay={true}
                             style={{maxHeight:300,maxWidth:300}}
+                            onError={videoerror}
                         ></video>
                     </div>
                 </div>
@@ -115,25 +240,48 @@ const VideoItem: React.FC<{ payload: any; }> = React.memo(
         }
     }
 );
+
 regChatInputAction({
     label: "发送视频",
     onClick: async (actions) => {
         const file = await openFile({accept: 'video/*'});
         const videoRes = await ImgChecked(file)
-        const res = await uploadFile(file);
-        const sendMsg = actions.sendMsg;
-        sendMsg(
-            getMessageTextDecorators().card(file.name, {
-                type: 'SsdccVideo',
-                data: res.url,
-                width:videoRes.width,
-                height:videoRes.height,
-                imgSrc:videoRes.imgSrc
+        const setUpload = {setUploadProgress:function (uploadProgr) {}}
+        const Dpercentage: React.FC<{}> = React.memo(({ }) => {
+            const [uploadProgress, setUploadProgress] = useState(''); // 0 - 100
+            setUpload.setUploadProgress = setUploadProgress
+            return (
+                <div style={{margin:10}}>
+                    {uploadProgress}
+                </div>
+            );
+        });
+        const key = openModal(
+            <Dpercentage/>,{closable:false,maskClosable:false}
+        )
+        try {
+            const res = await uploadFile(file,{
+                onProgress:function (percentage,progressEvent){
+                    setUpload.setUploadProgress((progressEvent.loaded/1048576).toFixed(2)+'/'+(progressEvent.total/1048576).toFixed(2)+'MB|进度:'+(percentage*100)+'%')
+                }
             })
-        );
+            closeModal(key)
+            const sendMsg = actions.sendMsg;
+            sendMsg(
+                getMessageTextDecorators().card(file.name, {
+                    type: 'SsdccVideo',
+                    data: res.url,
+                    width: videoRes.width,
+                    height:videoRes.height,
+                    imgSrc:videoRes.imgSrc,
+                    size:file.size
+                })
+            )
+        }catch (e){
+            closeModal(key)
+        }
     },
 });
-
 /**
  * 打开一个选择文件的窗口, 并返回文件
  */

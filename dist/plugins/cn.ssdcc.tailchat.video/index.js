@@ -1535,16 +1535,37 @@ definePlugin('@plugins/cn.ssdcc.tailchat.video', ['exports', '@capital/common', 
 	  onClick: async (actions) => {
 	    const file = await openFile({ accept: "video/*" });
 	    const videoRes = await ImgChecked(file);
-	    const res = await common.uploadFile(file);
-	    const sendMsg = actions.sendMsg;
-	    sendMsg(common.getMessageTextDecorators().card(file.name, {
-	      type: "SsdccVideo",
-	      data: res.url,
-	      width: videoRes.width,
-	      height: videoRes.height,
-	      imgSrc: videoRes.imgSrc,
-	      size: file.size
-	    }));
+	    const setUpload = { setUploadProgress: function(uploadProgr) {
+	    } };
+	    const Dpercentage = React__default["default"].memo(({}) => {
+	      const [uploadProgress, setUploadProgress] = React.useState("");
+	      setUpload.setUploadProgress = setUploadProgress;
+	      return /* @__PURE__ */ React__default["default"].createElement("div", {
+	        style: { margin: 10 }
+	      }, uploadProgress);
+	    });
+	    const key = common.openModal(/* @__PURE__ */ React__default["default"].createElement(Dpercentage, null), { closable: false, maskClosable: false });
+	    try {
+	      const res = await common.uploadFile(file, {
+	        onProgress: function(percentage, progressEvent) {
+	          setUpload.setUploadProgress((progressEvent.loaded / 1048576).toFixed(2) + "/" + (progressEvent.total / 1048576).toFixed(2) + "MB|\u8FDB\u5EA6:" + percentage * 100 + "%");
+	          console.log(percentage);
+	        }
+	      });
+	      common.closeModal(key);
+	      const sendMsg = actions.sendMsg;
+	      sendMsg(common.getMessageTextDecorators().card(file.name, {
+	        type: "SsdccVideo",
+	        data: res.url,
+	        width: videoRes.width,
+	        height: videoRes.height,
+	        imgSrc: videoRes.imgSrc,
+	        size: file.size
+	      }));
+	    } catch (e) {
+	      common.closeModal(key);
+	      return;
+	    }
 	  }
 	});
 	async function openFile(fileDialogOptions) {
