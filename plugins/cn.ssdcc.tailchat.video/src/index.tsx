@@ -84,7 +84,7 @@ regMessageExtraParser({
                             src={url}
                             controls
                             autoPlay={false}
-                            style={{maxHeight: 300, maxWidth: 300}}
+                            style={{maxHeight: 250, maxWidth: 250}}
                         ></video>
                     </div>
 
@@ -231,7 +231,7 @@ const VideoItem: React.FC<{ payload: any; }> = React.memo(
                             src={url}
                             controls
                             autoPlay={true}
-                            style={{maxHeight:300,maxWidth:300}}
+                            style={{maxHeight:250,maxWidth:250}}
                             onError={videoerror}
                         ></video>
                     </div>

@@ -1386,7 +1386,7 @@ definePlugin('@plugins/cn.ssdcc.tailchat.video', ['exports', '@capital/common', 
 	          src: url,
 	          controls: true,
 	          autoPlay: false,
-	          style: { maxHeight: 300, maxWidth: 300 }
+	          style: { maxHeight: 250, maxWidth: 250 }
 	        }));
 	      }
 	    }
@@ -1525,7 +1525,7 @@ definePlugin('@plugins/cn.ssdcc.tailchat.video', ['exports', '@capital/common', 
 	      src: url,
 	      controls: true,
 	      autoPlay: true,
-	      style: { maxHeight: 300, maxWidth: 300 },
+	      style: { maxHeight: 250, maxWidth: 250 },
 	      onError: videoerror
 	    })));
 	  }
