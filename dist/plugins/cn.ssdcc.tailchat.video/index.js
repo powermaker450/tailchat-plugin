@@ -1404,6 +1404,19 @@ definePlugin('@plugins/cn.ssdcc.tailchat.video', ['exports', '@capital/common', 
 	  const [ishidden, setIshidden] = React.useState(true);
 	  const [isload, setisload] = React.useState(true);
 	  const [loaded, setloaded] = React.useState("0/0MB");
+	  let tipsNum = 0;
+	  for (let i = 0; i < payload.label.length; i++) {
+	    var Notetips = payload.label.charAt(i);
+	    if (/^[\u4e00-\u9fa5]$/.test(Notetips)) {
+	      tipsNum += 1.5;
+	    } else {
+	      tipsNum += 1;
+	    }
+	    if (tipsNum >= 30) {
+	      payload.label = payload.label.slice(0, i - 5) + "...";
+	      break;
+	    }
+	  }
 	  function handleClick() {
 	    const lsurl = getlocalStorage(url);
 	    if (lsurl) {
