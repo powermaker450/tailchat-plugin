@@ -1544,7 +1544,7 @@ definePlugin('@plugins/cn.ssdcc.tailchat.video', ['exports', '@capital/common', 
 	  }
 	});
 	common.regChatInputAction({
-	  label: "\u53D1\u9001\u89C6\u9891",
+	  label: "Send Video",
 	  onClick: async (actions) => {
 	    const file = await openFile({ accept: "video/*" });
 	    const videoRes = await ImgChecked(file);
