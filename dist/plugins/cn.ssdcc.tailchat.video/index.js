@@ -1496,7 +1496,7 @@ definePlugin('@plugins/cn.ssdcc.tailchat.video', ['exports', '@capital/common', 
 	      icon: "mdi:downloads"
 	    }), /* @__PURE__ */ React__default["default"].createElement("span", {
 	      className: "ml-1"
-	    }, "\u4E0B\u8F7D"))), /* @__PURE__ */ React__default["default"].createElement("div", null, /* @__PURE__ */ React__default["default"].createElement("img", {
+	    }, "Download"))), /* @__PURE__ */ React__default["default"].createElement("div", null, /* @__PURE__ */ React__default["default"].createElement("img", {
 	      src: payload.imgSrc,
 	      style: { height: 200, width: 300 }
 	    }), /* @__PURE__ */ React__default["default"].createElement(component.Icon, {
@@ -1516,7 +1516,7 @@ definePlugin('@plugins/cn.ssdcc.tailchat.video', ['exports', '@capital/common', 
 	      icon: "mdi:downloads"
 	    }), /* @__PURE__ */ React__default["default"].createElement("span", {
 	      className: "ml-1"
-	    }, "\u4E0B\u8F7D"))), /* @__PURE__ */ React__default["default"].createElement("div", null, /* @__PURE__ */ React__default["default"].createElement("img", {
+	    }, "Download"))), /* @__PURE__ */ React__default["default"].createElement("div", null, /* @__PURE__ */ React__default["default"].createElement("img", {
 	      src: payload.imgSrc,
 	      style: { height: 200, width: 300 }
 	    }), /* @__PURE__ */ React__default["default"].createElement("div", {
@@ -1534,7 +1534,7 @@ definePlugin('@plugins/cn.ssdcc.tailchat.video', ['exports', '@capital/common', 
 	      icon: "mdi:downloads"
 	    }), /* @__PURE__ */ React__default["default"].createElement("span", {
 	      className: "ml-1"
-	    }, "\u4E0B\u8F7D"))), /* @__PURE__ */ React__default["default"].createElement("video", {
+	    }, "Download"))), /* @__PURE__ */ React__default["default"].createElement("video", {
 	      src: url,
 	      controls: true,
 	      autoPlay: true,
